@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esquenta ENEM - Quiz Interativo de Matemática</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-card: #1e293b;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 40%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animação do Robô/Mascote Geométrico */
+        .mascot-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .mascot-svg {
+            width: 80px;
+            height: 80px;
+            filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.5));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(2deg); }
+        }
+
+        /* Cabeçalho e Progresso */
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .badge-topic {
+            display: inline-block;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
+            transition: width 0.4s ease;
+        }
+
+        .quiz-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* Enunciado */
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: var(--text-main);
+        }
+
+        /* Alternativas */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: var(--text-main);
+            font-size: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: rgba(139, 92, 246, 0.1);
+            border-color: var(--accent-purple);
+            transform: translateX(4px);
+        }
+
+        .option-btn.selected {
+            border-color: var(--accent-blue);
+            background-color: rgba(59, 130, 246, 0.15);
+        }
+
+        .option-btn.correct {
+            border-color: var(--success);
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #a7f3d0;
+        }
+
+        .option-btn.incorrect {
+            border-color: var(--error);
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fecaca;
+        }
+
+        .option-letter {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Botões de Ação */
+        .actions-bar {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-hint {
+            background-color: transparent;
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .btn-hint:hover {
+            background-color: rgba(245, 158, 11, 0.1);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+            margin-left: auto;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Painel de Dica */
+        .hint-box {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 15px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            color: #fde68a;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Painel de Resolução */
+        .resolution-box {
+            background-color: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .resolution-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 100px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tela Final Motivacional */
+        .end-screen {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .end-title {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a7f3d0, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .score-circle {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 25px auto;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .score-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .motivation-card {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: left;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .motivation-card h3 {
+            color: var(--accent-purple);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rules-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .rules-list li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 10px;
+            color: var(--text-muted);
+        }
+
+        .rules-list li::before {
+            content: "🚀";
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Mascote Geométrico Animação -->
+    <div class="mascot-container">
+        <svg class="mascot-svg" viewBox="0 0 100 100" fill="none" xmlns="[suspicious link removed]">
+            <rect x="20" y="20" width="60" height="60" rx="15" fill="url(#grad)" stroke="#8b5cf6" stroke-width="3"/>
+            <circle cx="40" cy="45" r="6" fill="#fff"/>
+            <circle cx="60" cy="45" r="6" fill="#fff"/>
+            <circle cx="40" cy="45" r="3" fill="#0f172a"/>
+            <circle cx="60" cy="45" r="3" fill="#0f172a"/>
+            <path d="M 35 65 Q 50 75 65 65" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <defs>
+                <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#8b5cf6" />
+                    <stop offset="100%" stop-color="#3b82f6" />
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+
+    <!-- Tela do Quiz -->
+    <div id="quiz-screen">
+        <div class="header">
+            <span class="badge-topic" id="topic-badge">Tema</span>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+            <div class="quiz-stats">
+                <span id="question-count">Questão 1 de 10</span>
+                <span id="score-count">Acertos: 0</span>
+            </div>
+        </div>
+
+        <div class="question-text" id="question-text">
+            Carregando enunciado...
+        </div>
+
+        <div class="options-grid" id="options-container">
+            <!-- Alternativas inseridas via JS -->
+        </div>
+
+        <div class="hint-box" id="hint-box">
+            💡 <strong>Dica:</strong> <span id="hint-text"></span>
+        </div>
+
+        <div class="resolution-box" id="resolution-box">
+            <div class="resolution-title" id="resolution-status">
+                <!-- Status e Ícone -->
+            </div>
+            <div id="resolution-text" style="line-height: 1.6; color: var(--text-muted);">
+                <!-- Texto da Resolução -->
+            </div>
+        </div>
+
+        <div class="actions-bar">
+            <button class="btn btn-hint" id="btn-hint" onclick="toggleHint()">
+                💡 Ver Dica
+            </button>
+            <button class="btn btn-submit" id="btn-submit" onclick="submitAnswer()" disabled>
+                Responder
+            </button>
+            <button class="btn btn-submit" id="btn-next" onclick="nextQuestion()" style="display: none;">
+                Próxima Questão ➔
+            </button>
+        </div>
+    </div>
+
+    <!-- Tela Final Motivacional -->
+    <div class="end-screen" id="end-screen">
+        <div class="end-title">Aulão Concluído com Sucesso! 🎉</div>
+        
+        <div class="score-circle">
+            <span class="score-number" id="final-score">0/10</span>
+            <span style="font-size: 0.8rem; opacity: 0.8;">ACERTOS</span>
+        </div>
+
+        <div class="motivation-card">
+            <h3>🔥 O Seu Momento Chegou!</h3>
+            <p>A prova do ENEM não avalia apenas quem decorou fórmulas, mas quem consegue utilizar a lógica para resolver problemas reais com calma e estratégia!</p>
+        </div>
+
+        <div class="motivation-card">
+            <h3>📝 Marcas Registradas do ENEM</h3>
+            <ul class="rules-list">
+                <li><strong>Contextualização Prática:</strong> Os enunciados trazem situações do dia a dia, tabelas e gráficos reais.</li>
+                <li><strong>O Comando Final:</strong> A pergunta exata da questão quase sempre está nas últimas duas linhas do texto!</li>
+                <li><strong>Distratores Inteligentes:</strong> Cuidado com as pegadinhas de conversão de unidades (ex: cm para metros, minutos para horas).</li>
+                <li><strong>Estratégia TRI:</strong> Garanta primeiro todas as questões fáceis para elevar sua nota teórica no sistema!</li>
+            </ul>
+        </div>
+
+        <button class="btn btn-submit" style="margin-top: 15px;" onclick="restartQuiz()">
+            🔄 Reiniciar Esquenta
+        </button>
+    </div>
+</div>
+
+<script>
+    // Banco de Questões do Esquenta (10 Questões Representativas do Ranking)
+    const quizData = [
+        {
+            topic: "1º LUGAR — Escala Cartográfica",
+            question: "Um arquiteto projeta a maquete de um edifício residencial utilizando a escala 1 : 150. Se a altura do edifício na maquete é de 24 cm, qual é a altura real desse prédio, em metros?",
+            options: ["16 m", "24 m", "36 m", "48 m", "360 m"],
+            correct: 2,
+            hint: "Multiplique a medida da maquete pelo fator de escala (150) e depois converta de centímetros para metros (dividindo por 100).",
+            resolution: "<strong>Resolução Passo a Passo:</strong><br>1. Medida Real = 24 cm × 150 = 3.600 cm.<br>2. Convertendo para metros: 3.600 ÷ 100 = <strong>36 metros</strong>.<br><strong>Gabarito Correto: Alternativa (C)</strong>"
+        },
+        {
+            topic: "2º LUGAR — Média Aritmética Simples",
+            question: "Um estudante realizou 4 simulados e obteve as notas 680, 720, 740 e 780. A média aritmética simples das notas desse estudante é:",
+            options: ["720", "730", "740", "750", "760"],
+            correct: 1,
+            hint: "Some todas as quatro notas e divida a soma total por 4.",
+            resolution: "<strong>Resolução Passo a Passo:</strong><br>1. Soma das notas = 680 + 720 + 740 + 780 = 2.920.<br>2. Média = 2.920 ÷ 4 = <strong>730</strong>.<br><strong>Gabarito Correto: Alternativa (B)</strong>"
+        },
+        {
+            topic: "3º LUGAR — Mediana",
+            question: "Os tempos (em minutos) gastos por um atleta em 7 treinos de corrida foram: 18, 25, 20, 15, 30, 22, 19. A mediana desse conjunto é:",
+            options: ["19 min", "20 min", "21 min", "22 min", "25 min"],
+            correct: 1,
+            hint: "Organize primeiro os valores em ordem crescente (Rol). O valor exatamente do meio é a mediana.",
+            resolution: "<strong>Resolução Passo a Passo:</strong><br>1. Organizando o Rol crescente: 15, 18, 19, <strong>20</strong>, 22, 25, 30.<br>2. Como temos 7 elementos (ímpar), o elemento central (4º termo) é <strong>20 min</strong>.<br><strong>Gabarito Correto: Alternativa (B)</strong>"
+        },
+        {
+            topic: "4º LUGAR — Média Ponderada",
+            question: "Em um processo seletivo, Matemática tem peso 3, Português peso 2 e Redação peso 5. Se um candidato tirou 80 em Mat, 70 em Port e 90 em Redação, sua média final foi:",
+            options: ["80", "83", "85", "87", "90"],
+            correct: 1,
+            hint: "Multiplique cada nota pelo seu peso, some os resultados e divida pela soma dos pesos (3 + 2 + 5 = 10).",
+            resolution: "<strong>Resolução Passo a Passo:</strong><br>1. Soma Ponderada = (80×3) + (70×2) + (90×5) = 240 + 140 + 450 = 830.<br>2. Soma dos pesos = 3 + 2 + 5 = 10.<br>3. Média Ponderada = 830 ÷ 10 = <b>83</b>.<br><strong>Gabarito Correto: Alternativa (B)</strong>"
+        },
+        {
+            topic: "5º LUGAR — Área do Retângulo",
+            question: "Um terreno retangular possui 15 m de largura por 30 m de comprimento. A área total a ser coberta por grama sintética é:",
+            options: ["90 m²", "225 m²", "450 m²", "600 m²", "900 m²"],
+            correct: 2,
+            hint: "A área de um retângulo é calculada multiplicando a largura pelo comprimento (A = b × h).",
+            resolution: "<strong>Resolução Passo a Passo:</strong><br>Área = 15 m × 30 m = <strong>450 m²</strong>.<br><strong>Gabarito Correto: Alternativa (C)</strong>"
+        },
+        {
+            topic: "6º LUGAR — Teorema de Pitágoras",
+            question: "Uma escada de 10 m de comprimento está apoiada em um muro vertical. Se a base da escada está afastada 6 m do muro, a altura alcançada no muro é:",
+            options: ["6 m", "7 m", "8 m", "9 m", "12 m"],
+            correct: 2,
+            hint: "A escada representa a hipotenusa (a = 10). Aplique o teorema a² = b² + c².",
+            resolution: "<strong>Resolução Passo a Passo:</strong><br>1. 10² = 6² + h² → 100 = 36 + h².<br>2. h² = 100 - 36 = 64 → h = √64 = <strong>8 metros</strong>.<br><strong>Gabarito Correto: Alternativa (C)</strong>"
+        },
+        {
+            topic: "7º LUGAR — Volume do Cilindro",
+            question: "Um reservatório cilíndrico tem raio da base igual a 2 m e altura de 5 m. Adotando π = 3, o volume desse reservatório em m³ é:",
+            options: ["20 m³", "30 m³", "60 m³", "100 m³", "120 m³"],
+            correct: 2,
+            hint: "Fórmula do volume do cilindro: V = π × r² × h. Lembre-se de elevar o raio ao quadrado primeiro!",
+            resolution: "<strong>Resolução Passo a Passo:</strong><br>1. V = 3 × (2)² × 5.<br>2. V = 3 × 4 × 5 = <strong>60 m³</strong>.<br><strong>Gabarito Correto: Alternativa (C)</strong>"
+        },
+        {
+            topic: "8º LUGAR — Volume do Paralelepípedo",
+            question: "Uma caixa-d'água retangular tem 2 m de largura, 3 m de comprimento e 1,5 m de altura. A capacidade total dessa caixa em litros é:",
+            options: ["4.500 L", "6.000 L", "7.500 L", "9.000 L", "12.000 L"],
+            correct: 3,
+            hint: "Calcule o volume em m³ (V = a × b × c) e multiplique por 1.000 (pois 1 m³ = 1.000 Litros).",
+            resolution: "<strong>Resolução Passo a Passo:</strong><br>1. Volume = 2 × 3 × 1,5 = 9 m³.<br>2. Em litros = 9 × 1.000 = <strong>9.000 Litros</strong>.<br><strong>Gabarito Correto: Alternativa (D)</strong>"
+        },
+        {
+            topic: "9º LUGAR — Termo Geral da P.A.",
+            question: "Um atleta corre 3 km no 1º dia de treino e aumenta 0,5 km a cada dia subsequente. Quantos km ele correrá no 20º dia?",
+            options: ["12,0 km", "12,5 km", "13,0 km", "13,5 km", "14,0 km"],
+            correct: 1,
+            hint: "Aplica-se a fórmula a_n = a_1 + (n - 1) × r, com a_1 = 3, r = 0,5 e n = 20.",
+            resolution: "<strong>Resolução Passo a Passo:</strong><br>1. a₂₀ = 3 + (20 - 1) × 0,5.<br>2. a₂₀ = 3 + 19 × 0,5 = 3 + 9,5 = <strong>12,5 km</strong>.<br><strong>Gabarito Correto: Alternativa (B)</strong>"
+        },
+        {
+            topic: "10º LUGAR — Trigonometria",
+            question: "Uma rampa de 10 m de comprimento faz um ângulo de 30° com o solo horizontal. Sabendo que sen(30°) = 0,5, a altura alcançada por essa rampa é:",
+            options: ["2,5 m", "5,0 m", "7,5 m", "8,6 m", "10,0 m"],
+            correct: 1,
+            hint: "Seno = Cateto Oposto ÷ Hipotenusa. A rampa é a hipotenusa (10 m).",
+            resolution: "<strong>Resolução Passo a Passo:</strong><br>1. sen(30°) = h ÷ 10.<br>2. 0,5 = h ÷ 10 → h = 10 × 0,5 = <strong>5,0 metros</strong>.<br><strong>Gabarito Correto: Alternativa (B)</strong>"
+        }
+    ];
+
+    let currentIdx = 0;
+    let selectedOption = null;
+    let score = 0;
+
+    function loadQuestion() {
+        const q = quizData[currentIdx];
+        
+        // Atualizar Headers
+        document.getElementById("topic-badge").innerText = q.topic;
+        document.getElementById("question-count").innerText = `Questão ${currentIdx + 1} de ${quizData.length}`;
+        document.getElementById("score-count").innerText = `Acertos: ${score}`;
+        document.getElementById("progress-fill").style.width = `${((currentIdx + 1) / quizData.length) * 100}%`;
+
+        // Enunciado
+        document.getElementById("question-text").innerText = q.question;
+
+        // Limpar painéis
+        document.getElementById("hint-box").style.display = "none";
+        document.getElementById("hint-text").innerText = q.hint;
+        document.getElementById("resolution-box").style.display = "none";
+
+        // Botões de Ação
+        document.getElementById("btn-submit").style.display = "inline-flex";
+        document.getElementById("btn-submit").disabled = true;
+        document.getElementById("btn-next").style.display = "none";
+
+        // Renderizar Alternativas
+        const optionsContainer = document.getElementById("options-container");
+        optionsContainer.innerHTML = "";
+
+        const letters = ["A", "B", "C", "D", "E"];
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.onclick = () => selectOption(idx);
+            btn.innerHTML = `
+                <div class="option-letter">${letters[idx]}</div>
+                <div>${opt}</div>
+            `;
+            optionsContainer.appendChild(btn);
+        });
+
+        selectedOption = null;
+    }
+
+    function selectOption(idx) {
+        if (document.getElementById("resolution-box").style.display === "block") return; // já respondeu
+
+        selectedOption = idx;
+        const buttons = document.querySelectorAll(".option-btn");
+        buttons.forEach((btn, i) => {
+            if (i === idx) {
+                btn.classList.add("selected");
+            } else {
+                btn.classList.remove("selected");
+            }
+        });
+
+        document.getElementById("btn-submit").disabled = false;
+    }
+
+    function toggleHint() {
+        const hintBox = document.getElementById("hint-box");
+        hintBox.style.display = (hintBox.style.display === "block") ? "none" : "block";
+    }
+
+    function submitAnswer() {
+        if (selectedOption === null) return;
+
+        const q = quizData[currentIdx];
+        const buttons = document.querySelectorAll(".option-btn");
+
+        // Desabilitar seleção
+        buttons.forEach(btn => btn.disabled = true);
+
+        const resBox = document.getElementById("resolution-box");
+        const resStatus = document.getElementById("resolution-status");
+        const resText = document.getElementById("resolution-text");
+
+        if (selectedOption === q.correct) {
+            score++;
+            buttons[selectedOption].classList.add("correct");
+            resStatus.innerHTML = `<span style="color: var(--success)">✅ Resposta Correta!</span>`;
+        } else {
+            buttons[selectedOption].classList.add("incorrect");
+            buttons[q.correct].classList.add("correct");
+            resStatus.innerHTML = `<span style="color: var(--error)">❌ Resposta Incorreta</span>`;
+        }
+
+        resText.innerHTML = q.resolution;
+        resBox.style.display = "block";
+
+        document.getElementById("btn-submit").style.display = "none";
+        document.getElementById("btn-next").style.display = "inline-flex";
+        document.getElementById("score-count").innerText = `Acertos: ${score}`;
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < quizData.length) {
+            loadQuestion();
+        } else {
+            showEndScreen();
+        }
+    }
+
+    function showEndScreen() {
+        document.getElementById("quiz-screen").style.display = "none";
+        document.getElementById("end-screen").style.display = "block";
+        document.getElementById("final-score").innerText = `${score}/${quizData.length}`;
+    }
+
+    function restartQuiz() {
+        currentIdx = 0;
+        score = 0;
+        document.getElementById("end-screen").style.display = "none";
+        document.getElementById("quiz-screen").style.display = "block";
+        loadQuestion();
+    }
+
+    // Inicialização
+    loadQuestion();
+</script>
+
+</body>
+</html>
